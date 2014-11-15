@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013, Torsten Curdt
+ * Copyright 2008-2014, Torsten Curdt
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #import "FRSystemProfile.h"
 #import "FRConstants.h"
 #import "FRConsoleLog.h"
+#import "FRLocalizedString.h"
 
 #import "NSMutableDictionary+Additions.h"
 
@@ -120,7 +121,7 @@
         h = [hours intValue];
     }
 
-    NSDate *since = [[NSCalendarDate calendarDate] dateByAddingYears:0 months:0 days:0 hours:-h minutes:0 seconds:0];
+	NSDate *since = [NSDate dateWithTimeIntervalSinceNow:-h * 60.0 * 60.0];
 
     NSNumber *maximumSize = [[[NSBundle mainBundle] infoDictionary] valueForKey:PLIST_KEY_MAXCONSOLELOGSIZE];
 
@@ -303,6 +304,8 @@
 
 - (IBAction) cancel:(id)sender
 {
+	(void)sender;
+
     [uploader cancel], uploader = nil;
 
     [self close];
@@ -310,6 +313,8 @@
 
 - (IBAction) send:(id)sender
 {
+	(void)sender;
+
     if (uploader != nil) {
         NSLog(@"Still uploading");
         return;
@@ -347,14 +352,15 @@
         && !(reachabilityFlags & kSCNetworkFlagsInterventionRequired);
 
     if (!reachable) {
-        NSInteger alertResult = [[NSAlert alertWithMessageText:FRLocalizedString(@"Feedback Host Not Reachable", nil)
-                                                 defaultButton:FRLocalizedString(@"Proceed Anyway", nil)
-                                               alternateButton:FRLocalizedString(@"Cancel", nil)
-                                                   otherButton:nil
-                                     informativeTextWithFormat:FRLocalizedString(@"You may not be able to send feedback because %@ isn't reachable.", nil), host
-                                  ] runModal];
+		NSAlert *alert = [[NSAlert alloc] init];
+		[alert addButtonWithTitle:FRLocalizedString(@"Proceed Anyway", nil)];
+		[alert addButtonWithTitle:FRLocalizedString(@"Cancel", nil)];
+		[alert setMessageText:FRLocalizedString(@"Feedback Host Not Reachable", nil)];
+		[alert setInformativeText:[NSString stringWithFormat:FRLocalizedString(@"You may not be able to send feedback because %@ isn't reachable.", nil), host]];
+		NSInteger alertResult = [alert runModal];
+		[alert release];
 
-        if (alertResult != NSAlertDefaultReturn) {
+        if (alertResult != NSAlertFirstButtonReturn) {
             return;
         }
     }
@@ -415,6 +421,8 @@
 
 - (void) uploaderStarted:(FRUploader*)pUploader
 {
+	(void)pUploader;
+
     // NSLog(@"Upload started");
 
     [indicator setHidden:NO];
@@ -426,6 +434,8 @@
 
 - (void) uploaderFailed:(FRUploader*)pUploader withError:(NSError*)error
 {
+	(void)pUploader;
+
     NSLog(@"Upload failed: %@", error);
 
     [indicator stopAnimation:self];
@@ -449,6 +459,8 @@
 
 - (void) uploaderFinished:(FRUploader*)pUploader
 {
+	(void)pUploader;
+
     // NSLog(@"Upload finished");
 
     [indicator stopAnimation:self];
@@ -497,6 +509,8 @@
 
 - (void) windowWillClose: (NSNotification *) n
 {
+	(void)n;
+
     [uploader cancel];
 
     if ([type isEqualToString:FR_EXCEPTION]) {
